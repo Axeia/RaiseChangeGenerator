@@ -138,15 +138,16 @@ public class Generator : IIncrementalGenerator
 
         var sb = new StringBuilder();
 
-        // Namespace
-        if (!string.IsNullOrEmpty(ns))
-        {
-            sb.AppendLine($"namespace {ns};");
-            sb.AppendLine();
-        }
-
+        // Usings always go at the top
         sb.AppendLine("using ReactiveUI;");
         sb.AppendLine();
+
+        // Namespace (block‑scoped)
+        if (!string.IsNullOrEmpty(ns))
+        {
+            sb.AppendLine($"namespace {ns}");
+            sb.AppendLine("{");
+        }
 
         // Class declaration
         sb.AppendLine($"public partial class {className}");
@@ -158,7 +159,14 @@ public class Generator : IIncrementalGenerator
             sb.AppendLine(GenerateReactivePropertyBody(field, hasReactiveUISupport));
         }
 
+        // Close class
         sb.AppendLine("}");
+
+        // Close namespace if needed
+        if (!string.IsNullOrEmpty(ns))
+        {
+            sb.AppendLine("}");
+        }
 
         return sb.ToString();
     }
