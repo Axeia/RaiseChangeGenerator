@@ -7,7 +7,7 @@
 
 		<!-- NuGet Package Metadata -->
 		<PackageId>RaiseChangeGenerator</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Authors>Pascal Bakhuis</Authors>
 		<Description>Source generator for automatic ReactiveUI property change notification</Description>
 		<PackageTags>roslyn;source-generator;reactiveui;code-generation</PackageTags>
