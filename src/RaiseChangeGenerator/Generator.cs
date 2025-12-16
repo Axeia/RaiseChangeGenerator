@@ -75,25 +75,60 @@ public class Generator : IIncrementalGenerator
     {
         var firstField = fields.First();
         var sb = new StringBuilder();
+
         sb.AppendLine("using ReactiveUI;");
-        if (!string.IsNullOrEmpty(firstField.Namespace)) sb.AppendLine($"namespace {firstField.Namespace} {{");
+        sb.AppendLine();
 
-        var classParts = firstField.ContainingClass.Split('.');
-        foreach (var part in classParts) sb.AppendLine($"    partial class {part} {{");
-
-        foreach (var field in fields)
+        // 1. Open Namespace
+        if (!string.IsNullOrEmpty(firstField.Namespace))
         {
-            sb.AppendLine($"        public {field.Type} {field.PropertyName} {{");
-            sb.AppendLine($"            get => {field.FieldName};");
-            sb.AppendLine("            set {");
-            sb.AppendLine($"                this.RaiseAndSetIfChanged(ref {field.FieldName}, value);");
-            foreach (var also in field.AlsoNotifyProperties) sb.AppendLine($"                this.RaisePropertyChanged(nameof({also}));");
-            sb.AppendLine("            }");
-            sb.AppendLine("        }");
+            sb.AppendLine($"namespace {firstField.Namespace}");
+            sb.AppendLine("{");
         }
 
-        for (int i = 0; i < classParts.Length; i++) sb.AppendLine("    }");
-        if (!string.IsNullOrEmpty(firstField.Namespace)) sb.AppendLine("}");
+        // 2. Open Nested Classes
+        var classParts = firstField.ContainingClass.Split('.');
+        for (int i = 0; i < classParts.Length; i++)
+        {
+            // We add i levels of tabs for readability
+            string indent = new string(' ', (i + 1) * 4);
+            sb.AppendLine($"{indent}partial class {classParts[i]}");
+            sb.AppendLine($"{indent}{{");
+        }
+
+        // 3. Generate Properties
+        string propertyIndent = new string(' ', (classParts.Length + 1) * 4);
+        foreach (var field in fields)
+        {
+            sb.AppendLine($"{propertyIndent}public {field.Type} {field.PropertyName}");
+            sb.AppendLine($"{propertyIndent}{{");
+            sb.AppendLine($"{propertyIndent}    get => {field.FieldName};");
+            sb.AppendLine($"{propertyIndent}    set");
+            sb.AppendLine($"{propertyIndent}    {{");
+            sb.AppendLine($"{propertyIndent}        this.RaiseAndSetIfChanged(ref {field.FieldName}, value);");
+
+            foreach (var also in field.AlsoNotifyProperties)
+            {
+                sb.AppendLine($"{propertyIndent}        this.RaisePropertyChanged(nameof({also}));");
+            }
+
+            sb.AppendLine($"{propertyIndent}    }}");
+            sb.AppendLine($"{propertyIndent}}}");
+        }
+
+        // 4. Close Classes (Reverse Order)
+        for (int i = classParts.Length - 1; i >= 0; i--)
+        {
+            string indent = new string(' ', (i + 1) * 4);
+            sb.AppendLine($"{indent}}}");
+        }
+
+        // 5. Close Namespace
+        if (!string.IsNullOrEmpty(firstField.Namespace))
+        {
+            sb.AppendLine("}");
+        }
+
         return sb.ToString();
     }
 
