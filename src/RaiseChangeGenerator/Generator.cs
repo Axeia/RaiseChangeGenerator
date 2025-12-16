@@ -179,38 +179,31 @@ public class Generator : IIncrementalGenerator
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine($"    public {field.Type} {field.PropertyName}");
-        sb.AppendLine("    {");
-        sb.AppendLine($"        get => {field.FieldName};");
-        sb.AppendLine("        set");
+        sb.AppendLine($"        public {field.Type} {field.PropertyName}");
         sb.AppendLine("        {");
+        sb.AppendLine($"            get => {field.FieldName};");
+        sb.AppendLine("            set");
+        sb.AppendLine("            {");
 
         if (hasReactiveUISupport)
         {
-            sb.AppendLine($"            this.RaiseAndSetIfChanged(ref {field.FieldName}, value);");
-
+            sb.AppendLine($"                this.RaiseAndSetIfChanged(ref {field.FieldName}, value);");
             foreach (var alsoNotify in field.AlsoNotifyProperties)
-            {
-                sb.AppendLine($"            this.RaisePropertyChanged(nameof({alsoNotify}));");
-            }
+                sb.AppendLine($"                this.RaisePropertyChanged(nameof({alsoNotify}));");
         }
         else
         {
-            sb.AppendLine($"            if (!global::System.Collections.Generic.EqualityComparer<{field.Type}>.Default.Equals({field.FieldName}, value))");
-            sb.AppendLine("            {");
-            sb.AppendLine($"                {field.FieldName} = value;");
-            sb.AppendLine($"                OnPropertyChanged(nameof({field.PropertyName}));");
-
+            sb.AppendLine($"                if (!global::System.Collections.Generic.EqualityComparer<{field.Type}>.Default.Equals({field.FieldName}, value))");
+            sb.AppendLine("                {");
+            sb.AppendLine($"                    {field.FieldName} = value;");
+            sb.AppendLine($"                    OnPropertyChanged(nameof({field.PropertyName}));");
             foreach (var alsoNotify in field.AlsoNotifyProperties)
-            {
-                sb.AppendLine($"                OnPropertyChanged(nameof({alsoNotify}));");
-            }
-
-            sb.AppendLine("            }");
+                sb.AppendLine($"                    OnPropertyChanged(nameof({alsoNotify}));");
+            sb.AppendLine("                }");
         }
 
+        sb.AppendLine("            }");
         sb.AppendLine("        }");
-        sb.AppendLine("    }");
         sb.AppendLine();
 
         return sb.ToString();
