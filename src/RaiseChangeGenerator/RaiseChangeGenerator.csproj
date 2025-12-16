@@ -12,7 +12,7 @@
 		<Description>Source generator for automatic ReactiveUI property change notification</Description>
 		<PackageTags>roslyn;source-generator;reactiveui;code-generation</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/yourusername/RaiseChangeGenerator</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Axeia/RaiseChangeGenerator</RepositoryUrl>
 		
 		<!-- Critical for packaging -->
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
