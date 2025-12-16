@@ -134,35 +134,38 @@ public class Generator : IIncrementalGenerator
 
         var firstField = fields.First();
         var ns = firstField.Namespace;
-        var className = firstField.ContainingClass;
+        var classParts = firstField.ContainingClass.Split('.');
 
         var sb = new StringBuilder();
 
-        // Usings always go at the top
         sb.AppendLine("using ReactiveUI;");
         sb.AppendLine();
 
-        // Namespace (block‑scoped)
         if (!string.IsNullOrEmpty(ns))
         {
             sb.AppendLine($"namespace {ns}");
             sb.AppendLine("{");
         }
 
-        // Class declaration
-        sb.AppendLine($"public partial class {className}");
-        sb.AppendLine("{");
+        // open nested classes
+        foreach (var part in classParts)
+        {
+            sb.AppendLine($"public partial class {part}");
+            sb.AppendLine("{");
+        }
 
-        // Generate each property
+        // generate properties
         foreach (var field in fields)
         {
             sb.AppendLine(GenerateReactivePropertyBody(field, hasReactiveUISupport));
         }
 
-        // Close class
-        sb.AppendLine("}");
+        // close nested classes
+        for (int i = 0; i < classParts.Length; i++)
+        {
+            sb.AppendLine("}");
+        }
 
-        // Close namespace if needed
         if (!string.IsNullOrEmpty(ns))
         {
             sb.AppendLine("}");
@@ -170,6 +173,7 @@ public class Generator : IIncrementalGenerator
 
         return sb.ToString();
     }
+
 
     static string GenerateReactivePropertyBody(FieldInfo field, bool hasReactiveUISupport)
     {
