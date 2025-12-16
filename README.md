@@ -1,6 +1,6 @@
 ﻿# RaiseChangeGenerator
 
-`RaiseChangeGenerator` is a C# source generator that automatically implements `INotifyPropertyChanged` for your properties, reducing boilerplate and making ViewModels cleaner and easier to maintain.
+`RaiseChangeGenerator` is a C# source generator that automatically implements RaisePropertyChanged for your (optionally proxied) properties, reducing boilerplate and making ViewModels cleaner and easier to maintain.
 
 ## Features
 
@@ -8,20 +8,19 @@
 * Supports:
   * Regular properties  
     ```csharp
-    [AutoPropertyChanged]
+    [RaiseChange]
     private string _myProperty;
     ```
   * Proxy properties (and multiple properties, with a custom name if desired)  
     ```csharp
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Name))]
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Size), "Bytes")]
+    [RaiseChangeProxy(nameof(TorrentInfo.Name))]
+    [RaiseChangeProxy(nameof(TorrentInfo.Size), "Bytes")]
     private TorrentInfo _torrentInfo;
     ```
-  * Dependent property notifications
+  * Dependent property 
     ```csharp
-    [AutoPropertyChanged]
+    [RaiseChange]
     [AlsoNotify(nameof(FullName))]
-    [AlsoNotify(nameof(DisplayText))]
     private string _firstName;
     ```
 
@@ -29,19 +28,19 @@
 
 >[!NOTE]
 > * The class needs the `partial` keyword to allow the generator to add the necessary code.
-> * The class must inherit from `ReactiveObject` (in this project, often indirectly through `ViewModelBase`).
+> * The class must inherit from `ReactiveObject` (in Avalonia projects this often happpens indirectly through `ViewModelBase`).
 
 Your IDE should warn you if you forget `partial` and there's a custom error message if you forget to inherit from `ReactiveObject` -
 but it's easy to miss due to a flood of missing property errors.
 
-### AutoPropertyChanged
+### [RaiseChange]
 
-For simple auto-properties, create the backing field (e.g., `_myProperty`) and decorate it with the `AutoPropertyChanged` attribute. The generator will create a public property (`MyProperty`) with getter and setter, and the setter will raise the `PropertyChanged` event.
+For simple auto-properties, create the backing field (e.g., `_myProperty`) and decorate it with the `[RaiseChange]` attribute. The generator will create a public property (`MyProperty`) with getter and setter, and the setter will raise the `PropertyChanged` event.
 
 ```csharp
 public partial class MyViewModel : ViewModelBase
 {
-    [AutoPropertyChanged]
+    [[RaiseChange]]
     private string _myProperty;
 }
 /* Automatic Generation will create a `public string MyProperty` property.
@@ -49,9 +48,9 @@ public partial class MyViewModel : ViewModelBase
 ** The setter will `this.RaisePropertyChanged(nameof(MyProperty))` (if it changed) */
 ```
 
-### AutoProxyPropertyChanged
+### [RaiseChangeProxy]
 
-For proxy properties, you can use the `AutoProxyPropertyChanged` attribute. This is useful when you want to wrap another object and notify changes on it. Typically used for a Model from qBittorrentClient in this project.
+For proxy properties, you can use the `[RaiseChangeProxy]` attribute. This is useful when you want to wrap another object and notify changes on it. Typically used for a Model from qBittorrentClient in this project.
 
 It expects at least one parameter, the name of the property on the wrapped object that you want to notify changes for.
 
@@ -60,8 +59,8 @@ I <u>**highly**</u> recommend using the `nameof` operator to avoid typos and mak
 ```csharp
 public partial class MyViewModel : ViewModelBase
 {
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Name))]
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Size), "Bytes")]
+    [[RaiseChangeProxy](nameof(TorrentInfo.Name))]
+    [[RaiseChangeProxy](nameof(TorrentInfo.Size), "Bytes")]
     private TorrentInfo _torrentInfo;
 }
 /* Similarly to the previous example (public) getter and setters for the backing fields will 
@@ -81,12 +80,12 @@ I <u>**highly**</u> recommend using the `nameof` operator to avoid typos and mak
 ```csharp
 public partial class MyViewModel : ViewModelBase
 {
-    [AutoPropertyChanged]
+    [RaiseChange]
     [AlsoNotify(nameof(FullName))]
     [AlsoNotify(nameof(InitialsWithName))]
     private string _firstName;
 
-    [AutoPropertyChanged]
+    [RaiseChange]
     [AlsoNotify(nameof(FullName))]
     [AlsoNotify(nameof(InitialsWithName))]
     private string _lastName;
@@ -99,7 +98,7 @@ public partial class MyViewModel : ViewModelBase
 ** - this.RaisePropertyChanged(nameof(FirstName)) or this.RaisePropertyChanged(nameof(LastName))
 ** - this.RaisePropertyChanged(nameof(FullName))
 ** - this.RaisePropertyChanged(nameof(InitialsWithName))
-** This ensures the UI updates all dependent properties. */
+** This ensures the UI (and other observers) update all dependent properties. */
 ```
 
 #### Using AlsoNotify with Proxy Properties
@@ -109,8 +108,8 @@ You can also use `AlsoNotify` with proxy properties:
 ```csharp
 public partial class TorrentViewModel : ViewModelBase
 {
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Downloaded))]
-    [AutoProxyPropertyChanged(nameof(TorrentInfo.Size))]
+    [RaiseChangeProxy(nameof(TorrentInfo.Downloaded))]
+    [RaiseChangeProxy(nameof(TorrentInfo.Size))]
     [AlsoNotify(nameof(ProgressPercentage))]
     [AlsoNotify(nameof(RemainingBytes))]
     private TorrentInfo _torrentInfo;
@@ -131,24 +130,24 @@ Here's a complete example showing all features together:
 public partial class PersonViewModel : ViewModelBase
 {
     // Simple property
-    [AutoPropertyChanged]
+    [RaiseChange]
     private int _age;
 
     // Properties with dependent notifications
-    [AutoPropertyChanged]
+    [RaiseChange]
     [AlsoNotify(nameof(FullName))]
     [AlsoNotify(nameof(DisplayText))]
     private string _firstName;
 
-    [AutoPropertyChanged]
+    [RaiseChange]
     [AlsoNotify(nameof(FullName))]
     [AlsoNotify(nameof(DisplayText))]
     private string _lastName;
 
     // Proxy properties with dependent notifications
-    [AutoProxyPropertyChanged(nameof(Address.Street))]
-    [AutoProxyPropertyChanged(nameof(Address.City))]
-    [AutoProxyPropertyChanged(nameof(Address.ZipCode))]
+    [RaiseChangeProxy(nameof(Address.Street))
+    [RaiseChangeProxy(nameof(Address.City))]
+    [RaiseChangeProxy(nameof(Address.ZipCode))]
     [AlsoNotify(nameof(FullAddress))]
     private Address _address;
 
