@@ -7,7 +7,7 @@
 
 		<!-- NuGet Package Metadata -->
 		<PackageId>RaiseChangeGenerator</PackageId>
-		<Version>1.1.3</Version>
+		<Version>1.1.4</Version>
 		<Authors>Pascal Bakhuis</Authors>
 		<Description>Source generator for automatic ReactiveUI property change notification</Description>
 		<PackageTags>roslyn;source-generator;reactiveui;code-generation</PackageTags>
@@ -17,6 +17,7 @@
 		<!-- Critical for packaging -->
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeBuildOutput>true</IncludeBuildOutput>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -26,5 +27,9 @@
 	<!-- Pack the generator as an analyzer -->
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>
