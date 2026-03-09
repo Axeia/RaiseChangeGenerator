@@ -203,9 +203,15 @@ public class Generator : IIncrementalGenerator
             currentType = currentType.ContainingType; 
         }
 
-        return new FieldInfo(fieldSymbol.Name, ToPascal(fieldSymbol.Name), fieldSymbol.Type.ToDisplayString(), string.Join(".", classNames),
-            fieldSymbol.ContainingType.ContainingNamespace.IsGlobalNamespace ? "" : fieldSymbol.ContainingType.ContainingNamespace.ToDisplayString(),
-            fieldSymbol.GetAttributes().Where(a => a.AttributeClass?.Name == "AlsoNotifyAttribute").Select(a => a.ConstructorArguments[0].Value?.ToString() ?? "").ToList());
+        return new FieldInfo(
+            fieldSymbol.Name, ToPascal(fieldSymbol.Name), 
+            fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), 
+            string.Join(".", classNames),
+            fieldSymbol.ContainingType.ContainingNamespace.IsGlobalNamespace 
+                ? "" 
+                : fieldSymbol.ContainingType.ContainingNamespace.ToDisplayString(),
+                [.. fieldSymbol.GetAttributes().Where(a => a.AttributeClass?.Name == "AlsoNotifyAttribute").Select(a => a.ConstructorArguments[0].Value?.ToString() ?? "")]
+            );
     }
 
     static List<ProxyPropertyInfo> GetProxyPropertyInfos(GeneratorSyntaxContext context)
@@ -218,9 +224,13 @@ public class Generator : IIncrementalGenerator
         || context.SemanticModel.GetDeclaredSymbol(variable) is not IFieldSymbol fieldSymbol) 
             return result;
 
-        var classNames = new List<string>();
+        List<string> classNames = [];
         var currentType = fieldSymbol.ContainingType;
-        while (currentType != null) { classNames.Insert(0, currentType.Name); currentType = currentType.ContainingType; }
+        while (currentType != null) 
+        { 
+            classNames.Insert(0, currentType.Name); 
+            currentType = currentType.ContainingType; 
+        }
 
         var ns = fieldSymbol.ContainingType.ContainingNamespace.IsGlobalNamespace ? "" : fieldSymbol.ContainingType.ContainingNamespace.ToDisplayString();
 
@@ -233,11 +243,18 @@ public class Generator : IIncrementalGenerator
                 ? attr.ConstructorArguments[1].Value?.ToString() 
                 : null;
             var finalName = custom ?? ToPascal(path.Split('.').Last());
-            result.Add(new ProxyPropertyInfo(finalName, path, DeterminePropertyType(fieldSymbol, path), fieldSymbol.Name, string.Join(".", classNames), ns,
-                [.. fieldSymbol.GetAttributes()
-                .Where(a => a.AttributeClass?.Name == "AlsoNotifyAttribute")
-                .Select(a => a.ConstructorArguments[0].Value?.ToString() ?? "")]
-            ));
+            result.Add(
+                new ProxyPropertyInfo(
+                    finalName, 
+                    path, 
+                    DeterminePropertyType(fieldSymbol, path), 
+                    fieldSymbol.Name, 
+                    string.Join(".", classNames), 
+                    ns,
+                    [.. fieldSymbol.GetAttributes().Where(a => a.AttributeClass?.Name == "AlsoNotifyAttribute")
+                        .Select(a => a.ConstructorArguments[0].Value?.ToString() ?? "")]
+                )
+            );
         }
         return result;
     }
