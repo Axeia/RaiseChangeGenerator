@@ -35,7 +35,7 @@ public class AutoPropertyChangedSuppressor : DiagnosticSuppressor
 
             if (fieldDeclaration == null) continue;
 
-            // Check if any variable in this field declaration has the AutoPropertyChanged attribute
+            // Check if any variable in this field declaration has the ReactiveAttribute attribute
             foreach (var variable in fieldDeclaration.Declaration.Variables)
             {
                 var fieldSymbol = semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol;
