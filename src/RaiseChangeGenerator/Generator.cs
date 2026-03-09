@@ -216,7 +216,9 @@ public class Generator : IIncrementalGenerator
 
         return new FieldInfo(
             fieldSymbol.Name, ToPascal(fieldSymbol.Name),
-            fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            fieldSymbol.Type.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier)
+            ),
             string.Join(".", classNames),
             fieldSymbol.ContainingType.ContainingNamespace.IsGlobalNamespace
                 ? ""
@@ -291,7 +293,11 @@ public class Generator : IIncrementalGenerator
             };
             if (currentType is null) return "object";
         }
-        return currentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        return currentType.ToDisplayString(
+            SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+            )
+        );
     }
 
     static ISymbol? FindPropertyOrFieldInTypeHierarchy(ITypeSymbol type, string memberName)
