@@ -40,7 +40,7 @@ For simple auto-properties, create the backing field (e.g., `_myProperty`) and d
 ```csharp
 public partial class MyViewModel : ViewModelBase
 {
-    [[RaiseChange]]
+    [RaiseChange]
     private string _myProperty;
 }
 /* Automatic Generation will create a `public string MyProperty` property.
@@ -145,7 +145,7 @@ public partial class PersonViewModel : ViewModelBase
     private string _lastName;
 
     // Proxy properties with dependent notifications
-    [RaiseChangeProxy(nameof(Address.Street))
+    [RaiseChangeProxy(nameof(Address.Street))]
     [RaiseChangeProxy(nameof(Address.City))]
     [RaiseChangeProxy(nameof(Address.ZipCode))]
     [AlsoNotify(nameof(FullAddress))]
@@ -157,3 +157,10 @@ public partial class PersonViewModel : ViewModelBase
     public string FullAddress => $"{Street}, {City} {ZipCode}";
 }
 ```
+
+## Troubleshooting
+
+### Nullable Warning (CS8669)
+If you see warnings stating `The annotation for nullable reference types should only be used in code within a '#nullable' annotations context`, ensure:
+1. Your project has `<Nullable>enable</Nullable>` in the `.csproj`.
+2. Your ViewModels are marked as `partial`.
