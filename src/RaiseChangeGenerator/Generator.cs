@@ -95,20 +95,27 @@ public class Generator : IIncrementalGenerator
 
         foreach (var field in fields)
         {
-            // Use global:: to ensure the type is resolved correctly
             sb.AppendLine($"        public {field.Type} {field.PropertyName}");
             sb.AppendLine("        {");
             sb.AppendLine($"            get => this.{field.FieldName};");
-            sb.AppendLine("            set");
-            sb.AppendLine("            {");
-            // Use global::ReactiveUI.IReactiveObjectExtensions to be safe
-            sb.AppendLine($"                global::ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref this.{field.FieldName}, value);");
 
-            foreach (var also in field.AlsoNotifyProperties)
+            if (field.AlsoNotifyProperties.Count == 0)
             {
-                sb.AppendLine($"                global::ReactiveUI.IReactiveObjectExtensions.RaisePropertyChanged(this, nameof({also}));");
+                // Tidy single-line version
+                sb.AppendLine($"            set => global::ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref this.{field.FieldName}, value);");
             }
-            sb.AppendLine("            }");
+            else
+            {
+                // Create block version if there's multiple notifications to trigger
+                sb.AppendLine("            set");
+                sb.AppendLine("            {");
+                sb.AppendLine($"                global::ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref this.{field.FieldName}, value);");
+                foreach (var also in field.AlsoNotifyProperties)
+                {
+                    sb.AppendLine($"                global::ReactiveUI.IReactiveObjectExtensions.RaisePropertyChanged(this, nameof({also}));");
+                }
+                sb.AppendLine("            }");
+            }
             sb.AppendLine("        }");
         }
 
